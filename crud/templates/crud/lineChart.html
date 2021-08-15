@@ -1,0 +1,136 @@
+
+<body>
+  <div class="controls">
+    <h5 class="label">Change Trade Code</h5>
+    <select id="select" onchange="updateChartType()">
+    </select>
+  </div>
+  
+</body>
+
+
+
+
+<canvas id="myChart" width="100" height="50"></canvas>
+
+<script type="text/javascript">
+
+  var recieved_Dates = [];
+  var recieved_TradeCodes = [];
+  var recieved_volume = [];
+  var justTradeCodes = [];
+  var justVolume = [];
+  var justDates = [];
+  var previous_Trade_code;
+
+  "{%for i in companydata %}"
+
+    recieved_TradeCodes.push("{{i.Trade_name}}")
+    recieved_volume.push("{{i.volume}}")
+    recieved_Dates.push("{{i.date}}")
+
+  "{%endfor%}"
+
+   for(i in recieved_TradeCodes)
+   {
+     if(recieved_TradeCodes[i] != previous_Trade_code)
+      {
+          previous_Trade_code = recieved_TradeCodes[i];
+          justTradeCodes.push(recieved_TradeCodes[i]);
+      }
+   }
+
+
+   var selectedTradecode = justTradeCodes[0];
+
+   var select = document.getElementById("select");
+
+   for (let index = 0; index < justTradeCodes.length; index++) 
+   {
+     var option = document.createElement("OPTION");
+     var txt = document.createTextNode(justTradeCodes[index]);
+
+     option.appendChild(txt);
+     option.setAttribute("class","dropdown-item");
+     option.setAttribute("value",justTradeCodes[index]);
+     select.insertBefore(option,select.lastChild);
+
+     
+   }
+
+
+
+
+
+   for(i in recieved_TradeCodes)
+   {
+     if(selectedTradecode == recieved_TradeCodes[i])
+     {
+       justDates.push(recieved_Dates[i]);
+       justVolume.push(parseInt(recieved_volume[i].replace(/,/g, '')));
+     }
+   }
+
+
+   
+
+   var ctx = document.getElementById('myChart').getContext('2d');
+   var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: justDates,
+        datasets:
+        [{
+            label: 'volume of ' + selectedTradecode ,
+            data: justVolume,
+            fill:false,
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+            ],
+            tension: 0.2
+        }]
+    },
+});
+
+ function updateChartType() {
+  // Since you can't update chart type directly in Charts JS you must destroy original chart and rebuild
+
+
+  selectedTradecode = document.getElementById("select").value;
+  justDates = [];
+  justVolume = [];
+
+  for(i in recieved_TradeCodes)
+   {
+     if(selectedTradecode == recieved_TradeCodes[i])
+     {
+       justDates.push(recieved_Dates[i]);
+       justVolume.push(parseInt(recieved_volume[i].replace(/,/g, '')));
+     }
+   }
+
+   myChart.destroy();
+   myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: justDates,
+        datasets:
+        [{
+            label: 'volume of ' + selectedTradecode ,
+            data: justVolume,
+            fill:false,
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+            ],
+            tension: 0.2
+        }]
+      },
+   });
+};
+
+
+</script>
+
+
+
+
